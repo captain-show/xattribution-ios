@@ -58,7 +58,7 @@ public class XAttrubution {
                     guard var attribution = await getAttribution() else {
                         return
                     }
-                    attribution.removeValue(forKey: "attrubution")
+                    attribution.removeValue(forKey: "attribution")
                     let systemVersion = await MainActor.run { UIDevice.current.systemVersion }
                     attribution["ios_version"] = systemVersion
 
@@ -66,7 +66,7 @@ public class XAttrubution {
                         attribution["app_version"] = appVersion
                     }
 
-                    attribution["sdk_version"] = "1.0.2"
+                    attribution["sdk_version"] = "1.0.3"
 
                     let attStatus = await MainActor.run { ATTrackingManager.trackingAuthorizationStatus }
 
