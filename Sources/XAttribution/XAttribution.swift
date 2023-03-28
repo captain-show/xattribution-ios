@@ -66,9 +66,7 @@ public class XAttrubution {
                         attribution["app_version"] = appVersion
                     }
 
-                    if let sdkVersion = Bundle(for: type(of: self)).infoDictionary?["CFBundleShortVersionString"] as? String {
-                        attribution["sdk_version"] = sdkVersion
-                    }
+                    attribution["sdk_version"] = "1.0.1"
 
                     let attStatus = await MainActor.run { ATTrackingManager.trackingAuthorizationStatus }
 
@@ -103,6 +101,8 @@ public class XAttrubution {
                         attribution["bundle"] = bundle
                     }
 
+                    attribution["key"] = key
+
                     guard var components = URLComponents(string: self.url) else {
                         return
                     }
@@ -115,8 +115,6 @@ public class XAttrubution {
                     let jsonData = try JSONSerialization.data(withJSONObject: attribution,
                                                                     options: .prettyPrinted)
                     request.httpBody = jsonData
-
-                    attribution["key"] = key
 
                     _ = await session.request(request)
                         .validate(statusCode: 200..<300)
