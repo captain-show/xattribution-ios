@@ -66,7 +66,7 @@ public class XAttrubution {
                         attribution["app_version"] = appVersion
                     }
 
-                    attribution["sdk_version"] = "1.0.1"
+                    attribution["sdk_version"] = "1.0.2"
 
                     let attStatus = await MainActor.run { ATTrackingManager.trackingAuthorizationStatus }
 
@@ -95,6 +95,8 @@ public class XAttrubution {
                     } else if deviceType == .mac {
                         attribution["device_type"] = "mac"
                     }
+
+                    attribution["idfa"] = await MainActor.run { ASIdentifierManager.shared().advertisingIdentifier.uuidString }
 
                     let bundle = Bundle.main.bundleIdentifier
                     if let bundle {
