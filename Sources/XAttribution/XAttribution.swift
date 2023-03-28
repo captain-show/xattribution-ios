@@ -91,9 +91,9 @@ public class XAttrubution {
                     if deviceType == .phone {
                         attribution["device_type"] = "phone"
                     } else if deviceType == .pad {
-                        attribution["device_type"] = "pad"
-                    } else if deviceType == .mac {
-                        attribution["device_type"] = "mac"
+                        attribution["device_type"] = "tablet"
+                    } else {
+                        attribution["device_type"] = "other"
                     }
 
                     attribution["idfa"] = await MainActor.run { ASIdentifierManager.shared().advertisingIdentifier.uuidString }
