@@ -66,7 +66,7 @@ public class XAttrubution {
                         attribution["app_version"] = appVersion
                     }
 
-                    attribution["sdk_version"] = "1.0.3"
+                    attribution["sdk_version"] = "1.0.4"
 
                     let attStatus = await MainActor.run { ATTrackingManager.trackingAuthorizationStatus }
 
