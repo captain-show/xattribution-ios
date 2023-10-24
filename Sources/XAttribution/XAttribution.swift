@@ -48,16 +48,33 @@ public class XAttrubution {
         userDefaults.set(nil, forKey: "__aaa_x_attrubution_sent")
     }
 
-    public func collect(_ completion: ((Error?) -> ())? = nil) {
+    public func collect() async throws -> [String: Any] {
+        try await withCheckedThrowingContinuation { cont in
+            collect { rs, err in
+                if let err {
+                    return cont.resume(throwing: err)
+                }
+                if let rs {
+                    return cont.resume(returning: rs)
+                }
+                return cont.resume(throwing: XAttributionCollectionError())
+            }
+        }
+    }
+
+    public func collect(_ completion: (([String: Any]?, Error?) -> ())? = nil) {
         if let value = userDefaults.object(forKey: "__aaa_x_attrubution_sent") as? Bool, value {
+            completion?(nil, XAttributionAlreadyCollectedError())
             return
         }
         if #available(iOS 14.3, *) {
             Task {
                 do {
                     guard var attribution = await getAttribution() else {
+                        completion?(nil, XAttributionCollectionError())
                         return
                     }
+                    let fMethod = attribution
                     attribution.removeValue(forKey: "attribution")
                     let systemVersion = await MainActor.run { UIDevice.current.systemVersion }
                     attribution["ios_version"] = systemVersion
@@ -124,9 +141,9 @@ public class XAttrubution {
 
                     userDefaults.set(true, forKey: "__aaa_x_attrubution_sent")
 
-                    await MainActor.run { completion?(nil) }
+                    await MainActor.run { completion?(fMethod, nil) }
                 } catch {
-                    await MainActor.run { completion?(error) }
+                    await MainActor.run { completion?(nil, error) }
                 }
             }
         }
@@ -165,5 +182,24 @@ public class XAttrubution {
         }
     }
 
+    public struct XAttributionAlreadyCollectedError: LocalizedError, CustomNSError {
+        public var errorDescription: String {
+            "Attribution already collected"
+        }
+
+        public var errorUserInfo: [String : Any] {
+            [NSLocalizedDescriptionKey: errorDescription]
+        }
+    }
+
+    public struct XAttributionCollectionError: LocalizedError, CustomNSError {
+        public var errorDescription: String {
+            "Attribution cannot be collected"
+        }
+
+        public var errorUserInfo: [String : Any] {
+            [NSLocalizedDescriptionKey: errorDescription]
+        }
+    }
 
 }
