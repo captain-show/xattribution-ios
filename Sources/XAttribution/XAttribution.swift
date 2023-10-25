@@ -123,6 +123,7 @@ public class XAttrubution {
                     attribution["key"] = key
 
                     guard var components = URLComponents(string: self.url) else {
+                        await MainActor.run { completion?(nil, XAttributionCollectionError()) }
                         return
                     }
                     components.path = "/attribution"
