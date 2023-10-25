@@ -64,14 +64,16 @@ public class XAttrubution {
 
     public func collect(_ completion: (([String: Any]?, Error?) -> ())? = nil) {
         if let value = userDefaults.object(forKey: "__aaa_x_attrubution_sent") as? Bool, value {
-            completion?(nil, XAttributionAlreadyCollectedError())
+            DispatchQueue.main.async {
+                completion?(nil, XAttributionAlreadyCollectedError())
+            }
             return
         }
         if #available(iOS 14.3, *) {
             Task {
                 do {
                     guard var attribution = await getAttribution() else {
-                        completion?(nil, XAttributionCollectionError())
+                        await MainActor.run { completion?(nil, XAttributionCollectionError()) }
                         return
                     }
                     let fMethod = attribution
@@ -146,6 +148,10 @@ public class XAttrubution {
                 } catch {
                     await MainActor.run { completion?(nil, error) }
                 }
+            }
+        } else {
+            DispatchQueue.main.async {
+                completion?(nil, XAttributionCollectionError())
             }
         }
     }
