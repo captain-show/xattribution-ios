@@ -5,22 +5,20 @@
 //  Created by Radzivon Bartoshyk on 28/03/2023.
 //
 
-import Foundation
-import Alamofire
 import AdSupport
 import AdServices
 import UIKit
 import AppTrackingTransparency
 
-public class XAttrubution {
+public final class XAttrubution {
 
     private let key: String
     private let url: String
-    private let session: Alamofire.Session
+    private let session: URLSession
     private let userDefaults: UserDefaults
     private var userId: String?
 
-    init(key: String, url: String, session: Alamofire.Session, userDefaults: UserDefaults, userId: String?) {
+    init(key: String, url: String, session: URLSession, userDefaults: UserDefaults, userId: String?) {
         self.key = key
         self.url = url
         self.session = session
@@ -30,7 +28,7 @@ public class XAttrubution {
 
     public static func instance(key: String,
                                 url: String = "https://hq.cacaomeasure.com",
-                                session: Alamofire.Session = .init(),
+                                session: URLSession = .shared,
                                 userDefaults: UserDefaults = UserDefaults.standard,
                                 userId: String?) -> XAttrubution {
         return XAttrubution(key: key,
@@ -129,22 +127,28 @@ public class XAttrubution {
                         return
                     }
                     components.path = "/attribution"
-                    var request = try URLRequest(url: try components.asURL(),
-                                                 method: .post,
-                                                 headers: .init(["Content-Type": "application/json",
-                                                                 "Accept": "application/json"]))
+                    
+                    guard let url = components.url else {
+                        await MainActor.run { completion?(nil, XAttributionCollectionError()) }
+                        return
+                    }
+                    
+                    var request = URLRequest(url: url)
+                    request.httpMethod = "POST"
+                    request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+                    request.addValue("application/json", forHTTPHeaderField: "Accept")
+                    request.httpBody = try JSONSerialization.data(withJSONObject: attribution, options: .prettyPrinted)
 
-                    let jsonData = try JSONSerialization.data(withJSONObject: attribution,
-                                                                    options: .prettyPrinted)
-                    request.httpBody = jsonData
-
-                    _ = await session.request(request)
-                        .validate(statusCode: 200..<300)
-                        .serializingData().response.data
-
-                    userDefaults.set(true, forKey: "__aaa_x_attrubution_sent")
-
-                    await MainActor.run { completion?(fMethod, nil) }
+                    let (_, response) = try await self.session.data(for: request)
+                    
+                    await MainActor.run {
+                        if let urlResponse = (response as? HTTPURLResponse), 200..<300 ~= urlResponse.statusCode {
+                            userDefaults.set(true, forKey: "__aaa_x_attrubution_sent")
+                            completion?(fMethod, nil)
+                        } else {
+                            completion?(nil, XAttributionCollectionError())
+                        }
+                    }
                 } catch {
                     await MainActor.run { completion?(nil, error) }
                 }
@@ -165,19 +169,24 @@ public class XAttrubution {
             urlComponents.path = "/api/v1/"
             let token = try AAAttribution.attributionToken()
             let body = Data(token.utf8)
-            var request = try URLRequest(url: try urlComponents.asURL(),
-                                         method: .post,
-                                         headers: .init(["Content-Type": "text/plain"]))
+            
+            guard let url = urlComponents.url else {
+                return nil
+            }
+            
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.addValue("text/plain", forHTTPHeaderField: "Content-Type")
             request.httpBody = body
-            guard let data = await session.request(request)
-                .validate(statusCode: 200..<300)
-                .serializingData().response.data else {
+            
+            let (data, response) = try await session.data(for: request)
+            guard 
+                let urlResponse = (response as? HTTPURLResponse), 200..<300 ~= urlResponse.statusCode,
+                let attribution = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: Any]
+            else {
                 return nil
             }
-            guard let attribution = try JSONSerialization.jsonObject(with: data,
-                                                                     options: .allowFragments) as? [String: Any] else {
-                return nil
-            }
+                        
             var att: [String: Any] = [:]
             attribution.forEach { key, value in att[key] = value }
             if attribution["attribution"] as? Bool == true {
@@ -208,5 +217,4 @@ public class XAttrubution {
             [NSLocalizedDescriptionKey: errorDescription]
         }
     }
-
 }
