@@ -183,6 +183,8 @@ public final class XAttrubution {
             throw XAttributionTokenGenerationError(underlying: error)
         }
         
+        try? await Task.sleep(nanoseconds: NSEC_PER_SEC)
+        
         guard let url = urlComponents.url else {
             throw XAttributionInvalidStateError(message: "Cannot construct valid URL")
         }
