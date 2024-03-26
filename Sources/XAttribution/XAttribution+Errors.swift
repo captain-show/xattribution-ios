@@ -73,3 +73,24 @@ public struct XAttributionInvalidStateError: LocalizedError, CustomNSError {
     }
 }
 
+public struct XAttributionReachabilityError: LocalizedError, CustomNSError {
+    let statusCode: Int
+    public var errorDescription: String {
+        "Experiencing issues with reachability"
+    }
+    
+    public var errorUserInfo: [String : Any] {
+        [NSLocalizedDescriptionKey: errorDescription]
+    }
+}
+
+public struct XAttributionGatewayError: LocalizedError, CustomNSError {
+    public var errorDescription: String {
+        "Gateway timeout"
+    }
+    
+    public var errorUserInfo: [String : Any] {
+        [NSLocalizedDescriptionKey: errorDescription]
+    }
+}
+
