@@ -207,7 +207,7 @@ public final class XAttrubution {
              */
             // Do 3 retries with delay.
             while retries < 3 && statusCode == 404 {
-                try await Task.sleep(nanoseconds: NSEC_PER_SEC*4)
+                try await Task.sleep(nanoseconds: NSEC_PER_SEC*5)
                 (data, response) = try await session.data(for: request)
                 guard let urlResponse = (response as? HTTPURLResponse) else {
                     throw XAttributionInvalidStateError(message: "Cannot construct valid response from URL request")
