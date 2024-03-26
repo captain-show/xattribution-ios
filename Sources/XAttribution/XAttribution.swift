@@ -235,14 +235,20 @@ public final class XAttrubution {
                 throw XAttributionEmptyCollectionError()
             }
         }
-        /**
-         
-         500 - The Apple Search Ads server is temporarily down or unreachable. The request may be valid, but you need to retry it later.
-         */
-        /**
-         Skip for now allow -> allow retry later
-         */
         
-        return nil
+        if statusCode == 500 {
+            /**
+             500 - The Apple Search Ads server is temporarily down or unreachable. The request may be valid, but you need to retry it later.
+             */
+            /**
+             Skip for now -> allow retry later
+             */
+            throw XAttributionInvalidServerStateError()
+        }
+        
+        if statusCode == 504 {
+            throw XAttributionGatewayError()
+        }
+        throw XAttributionReachabilityError(statusCode: statusCode)
     }
 }
