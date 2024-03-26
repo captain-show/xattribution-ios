@@ -94,3 +94,12 @@ public struct XAttributionGatewayError: LocalizedError, CustomNSError {
     }
 }
 
+public struct XAttributionInvalidServerStateError: LocalizedError, CustomNSError {
+    public var errorDescription: String {
+        "Invalid Apple server state error"
+    }
+    
+    public var errorUserInfo: [String : Any] {
+        [NSLocalizedDescriptionKey: errorDescription]
+    }
+}

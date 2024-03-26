@@ -243,7 +243,7 @@ public final class XAttrubution {
             /**
              Skip for now -> allow retry later
              */
-            return nil
+            throw XAttributionInvalidServerStateError()
         }
         
         if statusCode == 504 {
