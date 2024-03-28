@@ -200,10 +200,11 @@ public final class XAttrubution {
         }
         var statusCode = urlResponse.statusCode
         var retries: Int = 0
+        
         if statusCode == 404 {
             /**
              404 signals an
-             Not found. The API is unable to retrieve the requested attribution record.Tokens have a TTL of 24 hours. If the POST API call exceeds 24 hours, a 404 response returns. If your token is valid, a best practice is to initiate retries at intervals of 5 seconds with a maximum of three attempts.
+             Not found. The API is unable to retrieve the requested attribution record. Tokens have a TTL of 24 hours. If the POST API call exceeds 24 hours, a 404 response returns. If your token is valid, a best practice is to initiate retries at intervals of 5 seconds with a maximum of three attempts.
              */
             // Do 3 retries with delay.
             while retries < 3 && statusCode == 404 {
@@ -215,6 +216,10 @@ public final class XAttrubution {
                 statusCode = urlResponse.statusCode
                 retries += 1
             }
+        }
+        
+        if statusCode == 404 {
+            throw XAttributionTokenExpiredError()
         }
         
         /**
