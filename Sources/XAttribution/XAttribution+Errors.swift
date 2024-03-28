@@ -79,6 +79,20 @@ public struct XAttributionReachabilityError: LocalizedError, CustomNSError {
         "Experiencing issues with reachability"
     }
     
+    public var errorCode: Int {
+        statusCode
+    }
+    
+    public var errorUserInfo: [String : Any] {
+        [NSLocalizedDescriptionKey: errorDescription, NSLocalizedFailureErrorKey: "Reachability error with code \(statusCode)"]
+    }
+}
+
+public struct XAttributionTokenExpiredError: LocalizedError, CustomNSError {
+    public var errorDescription: String {
+        "Attribution user token is expired"
+    }
+    
     public var errorUserInfo: [String : Any] {
         [NSLocalizedDescriptionKey: errorDescription]
     }
