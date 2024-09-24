@@ -46,14 +46,14 @@ public final class XAttrubution {
         userDefaults.set(nil, forKey: "__aaa_x_attrubution_sent")
     }
     
-    public func collect() async throws -> [String: Any] {
+    public func collect() async throws -> XAttributionContainer {
         try await withCheckedThrowingContinuation { cont in
             collect { rs, err in
                 if let err {
                     return cont.resume(throwing: err)
                 }
                 if let rs {
-                    return cont.resume(returning: rs)
+                    return cont.resume(returning: .init(attribution: rs))
                 }
                 return cont.resume(throwing: XAttributionCollectionError())
             }
