@@ -8,7 +8,7 @@
 import Foundation
 
 public final class XAttributionContainer: @unchecked Sendable {
-    let attribution: [String: Any]
+    public let attribution: [String: Any]
     
     init(attribution: [String : Any]) {
         self.attribution = attribution
