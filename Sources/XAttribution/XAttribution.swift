@@ -10,7 +10,7 @@ import AdServices
 import UIKit
 import AppTrackingTransparency
 
-public final class XAttrubution {
+public final class XAttrubution: @unchecked Sendable {
     
     private let key: String
     private let url: String
